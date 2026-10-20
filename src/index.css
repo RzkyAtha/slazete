@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Permanent+Marker&family=Poppins:wght@700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Permanent+Marker&family=Poppins:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 
 @theme {
   --font-display: 'Anton', 'Arial Black', sans-serif;
   --font-doodle: 'Permanent Marker', 'Segoe Print', cursive;
   --font-poppins: 'Poppins', sans-serif;
-  --font-body: 'Space Grotesk', 'Segoe UI', sans-serif;
+  --font-body: 'Poppins', 'Segoe UI', sans-serif;
   --color-ink: #0a0a0a;
   --color-paper: #fafafa;
 }
@@ -174,8 +174,64 @@ body {
   background: #0a0a0a;
 }
 
+/* scroll reveal (same ease as the old spring transition) */
+.reveal {
+  opacity: 0;
+  transform: translateY(48px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- lightbox ---------- */
+@keyframes lightbox-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lightbox-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.lightbox-backdrop {
+  animation: lightbox-fade 160ms ease-out both;
+}
+
+.lightbox-figure {
+  animation: lightbox-pop 280ms cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+.lightbox-closing,
+.lightbox-closing .lightbox-figure {
+  animation-duration: 150ms;
+  animation-timing-function: ease-in;
+  animation-direction: reverse;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }

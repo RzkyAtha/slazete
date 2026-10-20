@@ -2,7 +2,7 @@ export type Currency = 'IDR' | 'USD'
 
 export const CURRENCY: Currency[] = ['IDR', 'USD']
 
-/** IDR values are in thousands (K) — 150 = IDR 150.000. USD values are dollars. */
+/** IDR values are in thousands (K) - 150 = IDR 150.000. USD values are dollars. */
 export interface CommissionType {
   id: string
   label: string
@@ -104,12 +104,12 @@ export const TERMS = {
   general: [
     'No cancel or refund after payment',
     'No printing or selling my art without agreement',
-    "For international price, I don't use actual conversion rate from IDR — I'm using standard USD commission price based on market",
+    "For international price, I don't use actual conversion rate from IDR - I'm using standard USD commission price based on market",
   ],
   commission: [
     'Comprehensive brief and references are required',
-    'Prices stated are base prices — final price will be decided after the sketch is dealt along with estimated completion time',
-    'Prices listed are only for personal use — commercial purpose (merch, published books, etc): 2x final price',
+    'Prices stated are base prices - final price will be decided after the sketch is dealt along with estimated completion time',
+    'Prices listed are only for personal use - commercial purpose (merch, published books, etc): 2x final price',
     'Rush order is possible with rush fee (+50% final price). Rush orders can be done as early as 2 days (depends on project difficulty)',
     "Free revisions during sketch, 3 maximum revisions after I'm working on your sketch (minor revisions are allowed)",
     'Max. 5 characters in one canvas',
@@ -118,7 +118,7 @@ export const TERMS = {
     'Drawing will be sent through Google Drive link (pdf, jpg and png)',
   ],
   payment: [
-    'Full upfront or 50/50 — final half of the payment must be paid maximum 2 days after final artworks are sent',
+    'Full upfront or 50/50 - final half of the payment must be paid maximum 2 days after final artworks are sent',
     'E-wallet, BCA (IDR) or PayPal (USD)',
   ],
 }

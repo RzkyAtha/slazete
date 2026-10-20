@@ -1,10 +1,6 @@
 export interface PortfolioItem {
   id: string
   title: string
-  /** small corner tag, e.g. "New!" or "SFW" — optional */
-  tag?: string
-  /** price-style badge, e.g. "90K" — optional */
-  badge?: string
   /**
    * Image path under /public, e.g. "/portfolio/sample-1.png".
    * Leave undefined to show the "illustration soon!" placeholder.
@@ -20,34 +16,31 @@ export const PORTFOLIO: PortfolioItem[] = [
   {
     id: 'p1',
     title: 'Sample Work 01',
-    tag: 'New!',
-    badge: 'FB',
     subtitle: 'full body · detailed bg',
+    image: '/sample%202.png',
   },
   {
     id: 'p2',
     title: 'Sample Work 02',
-    tag: 'Popular',
-    badge: 'HB',
     subtitle: 'half body · character art',
+    image: '/sample%204.png',
   },
   {
     id: 'p3',
     title: 'Sample Work 03',
-    badge: 'HS',
     subtitle: 'headshot · bust up',
+    image: '/sample%203.png',
   },
   {
     id: 'p4',
     title: 'Sample Work 04',
-    badge: 'DUO',
     subtitle: '2 characters · couple',
+    image: '/sample%201.png',
   },
   {
     id: 'p5',
     title: 'Sample Work 05',
-    tag: 'Latest',
-    badge: 'FB',
     subtitle: 'full body · simple bg',
+    image: '/sample%205.png',
   },
 ]

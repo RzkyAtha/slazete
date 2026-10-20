@@ -63,7 +63,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* dropdown panel — black container */}
+      {/* dropdown panel - black container */}
       <div
         className={`absolute inset-x-0 top-full overflow-hidden bg-ink transition-all duration-300 ${
           open ? 'max-h-96' : 'max-h-0'

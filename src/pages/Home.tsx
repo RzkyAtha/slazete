@@ -1,20 +1,71 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { ArrowRightIcon } from '@heroicons/react/24/outline'
 import MangaPanel from '../components/MangaPanel'
 import PortfolioCarousel from '../components/PortfolioCarousel'
 
 export default function Home() {
   const portfolioRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: portfolioRef,
-    offset: ['start end', 'start 0.35'],
-  })
-  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 20 })
-  const guyX = useTransform(smooth, [0, 1], ['15vw', '0vw'])
-  const girlX = useTransform(smooth, [0, 1], ['-15vw', '0vw'])
-  const doodleOpacity = useTransform(smooth, [0, 1], [0.45, 0.15])
+  const guyRef = useRef<HTMLImageElement>(null)
+  const girlRef = useRef<HTMLImageElement>(null)
+  const revealRef = useRef<HTMLDivElement>(null)
+
+  // Doodle parallax + reveal, driven by a rAF lerp loop and IntersectionObserver
+  // instead of a JS animation library. Progress math matches the old offsets:
+  // 0 when the section top is at the viewport bottom, 1 when it reaches 35% vh.
+  useEffect(() => {
+    const guy = guyRef.current
+    const girl = girlRef.current
+    const section = portfolioRef.current
+    const reveal = revealRef.current
+    if (!guy || !girl || !section || !reveal) return
+
+    let cur = 0
+    let tgt = 0
+    let raf = 0
+
+    const apply = (p: number) => {
+      const x = ((1 - p) * 15).toFixed(3)
+      guy.style.transform = `translate3d(${x}vw, 0, 0)`
+      girl.style.transform = `translate3d(-${x}vw, 0, 0)`
+      const op = (0.45 - p * 0.3).toFixed(3)
+      guy.style.opacity = op
+      girl.style.opacity = op
+    }
+
+    const loop = () => {
+      cur += (tgt - cur) * 0.12
+      if (Math.abs(tgt - cur) < 0.001) cur = tgt
+      apply(cur)
+      raf = cur === tgt ? 0 : requestAnimationFrame(loop)
+    }
+
+    const measure = () => {
+      const vh = window.innerHeight
+      const top = section.getBoundingClientRect().top
+      tgt = Math.min(1, Math.max(0, (vh - top) / (vh * 0.65)))
+      if (!raf) raf = requestAnimationFrame(loop)
+    }
+
+    measure()
+    window.addEventListener('scroll', measure, { passive: true })
+    window.addEventListener('resize', measure)
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) reveal.classList.toggle('reveal-in', e.isIntersecting)
+      },
+      { threshold: 0.25 },
+    )
+    io.observe(reveal)
+
+    return () => {
+      window.removeEventListener('scroll', measure)
+      window.removeEventListener('resize', measure)
+      io.disconnect()
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
 
   return (
     <>
@@ -23,7 +74,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl flex-col items-center px-4 pt-16 pb-10 sm:px-6 sm:pt-12 sm:pb-8">
           <img
             src="/slazete_logo_nobg.webp"
-            alt="slazete — art commission"
+            alt="slazete - art commission"
             className="w-full max-w-xs sm:max-w-sm"
           />
 
@@ -56,19 +107,23 @@ export default function Home() {
 
       {/* ─── PORTFOLIO ─── */}
       <div ref={portfolioRef} className="halftone-white relative overflow-hidden bg-[#111111] py-20 sm:py-28">
-        <motion.img
+        <img
+          ref={guyRef}
           src="/guy_doodle.webp"
           alt=""
           aria-hidden="true"
-          style={{ x: guyX, opacity: doodleOpacity }}
-          className="pointer-events-none absolute -top-6 -left-64 w-[30rem] sm:-top-32 sm:-left-96 sm:w-[46rem] lg:w-[62rem]"
+          decoding="async"
+          style={{ transform: 'translate3d(15vw, 0, 0)', opacity: 0.45 }}
+          className="pointer-events-none absolute -top-6 -left-64 w-[30rem] will-change-transform sm:-top-32 sm:-left-96 sm:w-[46rem] lg:w-[62rem]"
         />
-        <motion.img
+        <img
+          ref={girlRef}
           src="/girl_doodle.webp"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute -top-6 -right-64 w-[30rem] sm:-top-32 sm:-right-96 sm:w-[46rem] lg:w-[62rem]"
-          style={{ x: girlX, opacity: doodleOpacity }}
+          decoding="async"
+          style={{ transform: 'translate3d(-15vw, 0, 0)', opacity: 0.45 }}
+          className="pointer-events-none absolute -top-6 -right-64 w-[30rem] will-change-transform sm:-top-32 sm:-right-96 sm:w-[46rem] lg:w-[62rem]"
         />
 
         {/* white torn paper edge covering the doodle tops */}
@@ -83,20 +138,14 @@ export default function Home() {
             d="M0 0 L1200 0 L1200 12 L1115 22 L1050 20 L985 32 L920 30 L855 44 L790 42 L725 50 L660 60 L600 82 L565 52 L520 58 L460 40 L395 44 L330 28 L265 30 L200 18 L130 22 L70 6 L0 14 Z"
           />
         </svg>
-        <motion.div
-          initial={{ opacity: 0, y: 48 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ amount: 0.25 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10"
-        >
-          <MangaPanel dark center chapter="01 — Gallery" title="Portfolio" id="portfolio">
+        <div ref={revealRef} className="reveal relative z-10">
+          <MangaPanel dark center title="Portfolio" id="portfolio">
             <p className="mx-auto -mt-4 mb-10 max-w-xl text-center text-paper">
-              a rotating shelf of past commissions and samples — flip through the stack.
+              a rotating shelf of past commissions and samples - flip through the stack.
             </p>
             <PortfolioCarousel dark />
           </MangaPanel>
-        </motion.div>
+        </div>
       </div>
 
       {/* ─── CTA banner ─── */}

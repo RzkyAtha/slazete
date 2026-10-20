@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  EyeIcon,
   PaintBrushIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { PORTFOLIO, type PortfolioItem } from '../data/portfolio'
 
 const n = PORTFOLIO.length
+
+// spring-like curve approximating the old framer spring (stiffness 260, damping 28)
+const CARD_EASE = 'cubic-bezier(0.34, 1.25, 0.64, 1)'
+const CARD_TRANSITION = `transform 560ms ${CARD_EASE}, opacity 380ms ease, visibility 560ms`
 
 function CardImage({ item }: { item: PortfolioItem }) {
   if (item.image) {
@@ -17,6 +22,7 @@ function CardImage({ item }: { item: PortfolioItem }) {
         alt={item.title}
         className="h-full w-full object-cover"
         draggable={false}
+        decoding="async"
       />
     )
   }
@@ -28,19 +34,21 @@ function CardImage({ item }: { item: PortfolioItem }) {
   )
 }
 
-function PortfolioCard({ item, active }: { item: PortfolioItem; active: boolean }) {
+function PortfolioCard({
+  item,
+  active,
+  onView,
+}: {
+  item: PortfolioItem
+  active: boolean
+  onView: () => void
+}) {
   return (
     <div
       className={`relative flex h-[23rem] w-56 flex-col rounded-2xl border bg-white p-3 select-none sm:h-[25rem] sm:w-72 ${
         active ? 'border-ink/15 shadow-[0_24px_50px_-20px_rgba(10,10,10,0.35)]' : 'border-ink/10 shadow-[0_16px_35px_-18px_rgba(10,10,10,0.25)]'
       }`}
     >
-      {item.tag && (
-        <span className="absolute top-4 right-4 z-10 rounded-full bg-ink px-2.5 py-0.5 text-[10px] font-semibold tracking-widest text-paper uppercase">
-          {item.tag}
-        </span>
-      )}
-
       <div className="h-52 overflow-hidden rounded-xl sm:h-56">
         <CardImage item={item} />
       </div>
@@ -50,42 +58,59 @@ function PortfolioCard({ item, active }: { item: PortfolioItem; active: boolean 
         {item.subtitle && <p className="mt-0.5 text-xs text-ink/45">{item.subtitle}</p>}
       </div>
 
-      <div className="mt-auto flex items-center justify-between px-2 pb-1.5">
-        {item.badge ? (
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/25 font-display text-[10px] tracking-wide text-ink">
-            {item.badge}
-          </span>
-        ) : (
-          <span />
-        )}
-        <span
-          className={`text-xs font-semibold tracking-widest uppercase transition-colors ${
-            active ? 'text-ink' : 'text-ink/35'
+      <div className="mt-auto px-2 pb-1.5">
+        <button
+          type="button"
+          disabled={!active || !item.image}
+          onClick={(e) => {
+            e.stopPropagation()
+            onView()
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className={`flex w-full items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-[11px] font-semibold tracking-widest uppercase transition-colors ${
+            active
+              ? 'cursor-pointer bg-ink text-paper hover:bg-ink/85'
+              : 'bg-ink/10 text-ink/40'
           }`}
         >
-          view work →
-        </span>
+          <EyeIcon className="h-3.5 w-3.5" />
+          View work
+        </button>
       </div>
     </div>
   )
 }
 
 export default function PortfolioCarousel({ dark = false }: { dark?: boolean }) {
-  const [[index, direction], setState] = useState<[number, number]>([0, 0])
+  const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)
+  const [lightbox, setLightbox] = useState<PortfolioItem | null>(null)
+  const [closing, setClosing] = useState(false)
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.innerWidth < 640,
   )
   const reducedMotion = useRef(
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   )
+  const drag = useRef<{
+    pointerId: number
+    startX: number
+    dx: number
+    el: HTMLDivElement
+  } | null>(null)
+  const suppressClick = useRef(false)
 
-  const paginate = useCallback((dir: number) => setState(([i]) => [(i + dir + n) % n, dir]), [])
+  const paginate = useCallback((dir: number) => setIndex((i) => (i + dir + n) % n), [])
 
-  const goTo = useCallback(
-    (target: number) => setState(([i]) => [target, target === i ? 0 : target > i ? 1 : -1]),
-    [],
-  )
+  const goTo = useCallback((target: number) => setIndex(target), [])
+
+  const closeLightbox = useCallback(() => {
+    setClosing(true)
+    window.setTimeout(() => {
+      setLightbox(null)
+      setClosing(false)
+    }, 170)
+  }, [])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 639px)')
@@ -96,10 +121,17 @@ export default function PortfolioCarousel({ dark = false }: { dark?: boolean }) 
   }, [])
 
   useEffect(() => {
-    if (paused || reducedMotion.current || n <= 1) return
+    if (paused || lightbox || reducedMotion.current || n <= 1) return
     const t = setInterval(() => paginate(1), 5000)
     return () => clearInterval(t)
-  }, [paused, paginate])
+  }, [paused, lightbox, paginate])
+
+  useEffect(() => {
+    if (!lightbox) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeLightbox()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lightbox, closeLightbox])
 
   // relative offset of each item from the active index, in [-2, 2]
   const offset = (i: number) => {
@@ -109,6 +141,35 @@ export default function PortfolioCarousel({ dark = false }: { dark?: boolean }) 
     return d
   }
 
+  const onDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = e.currentTarget
+    drag.current = { pointerId: e.pointerId, startX: e.clientX, dx: 0, el }
+    el.style.transition = 'none'
+    el.setPointerCapture(e.pointerId)
+  }
+
+  const onDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    if (!d || e.pointerId !== d.pointerId) return
+    d.dx = e.clientX - d.startX
+    if (Math.abs(d.dx) > 8) suppressClick.current = true
+    d.el.style.transform = `translateX(${d.dx * 0.6}px)`
+  }
+
+  const onDragEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    if (!d || e.pointerId !== d.pointerId) return
+    drag.current = null
+    d.el.style.transition = ''
+    d.el.style.transform = 'translateX(0px)'
+    if (d.dx < -80) paginate(1)
+    else if (d.dx > 80) paginate(-1)
+  }
+
+  const spread = isMobile ? 38 : 66
+  const tilt = isMobile ? 7 : 10
+  const drop = isMobile ? 18 : 26
+
   return (
     <div
       className="relative"
@@ -116,52 +177,52 @@ export default function PortfolioCarousel({ dark = false }: { dark?: boolean }) 
       onMouseLeave={() => setPaused(false)}
     >
       <div className="relative flex h-[27rem] items-center justify-center overflow-hidden sm:h-[29rem]">
-        <AnimatePresence initial={false} custom={direction}>
-          {PORTFOLIO.map((item, i) => {
-            const off = offset(i)
-            if (Math.abs(off) > 1) return null
-            const isCenter = off === 0
-            return (
-              <motion.div
-                key={item.id}
-                className="absolute"
-                custom={direction}
-                initial={{
-                  x: direction >= 0 ? '120%' : '-120%',
-                  rotate: direction >= 0 ? 10 : -10,
-                  scale: 0.85,
-                  opacity: 0,
-                }}
-                animate={{
-                  x: `${off * (isMobile ? 38 : 66)}%`,
-                  rotate: off * (isMobile ? 7 : 10),
-                  scale: isCenter ? 1 : 0.88,
-                  opacity: 1,
-                  y: isCenter ? 0 : isMobile ? 18 : 26,
-                  zIndex: isCenter ? 30 : 20 - Math.abs(off),
-                }}
-                exit={{
-                  x: direction >= 0 ? '-120%' : '120%',
-                  rotate: direction >= 0 ? -10 : 10,
-                  scale: 0.85,
-                  opacity: 0,
-                }}
-                transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-                drag={isCenter ? 'x' : false}
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.6}
-                onDragEnd={(_, info) => {
-                  if (info.offset.x < -80) paginate(1)
-                  else if (info.offset.x > 80) paginate(-1)
-                }}
-                onClick={() => !isCenter && goTo(i)}
-                style={{ cursor: isCenter ? 'grab' : 'pointer' }}
+        {PORTFOLIO.map((item, i) => {
+          const off = offset(i)
+          const isCenter = off === 0
+          const hidden = Math.abs(off) > 1
+          const transform = hidden
+            ? `translateX(${Math.sign(off) * 120}%) rotate(${Math.sign(off) * tilt}deg) scale(0.85)`
+            : `translateX(${off * spread}%) rotate(${off * tilt}deg) scale(${isCenter ? 1 : 0.88}) translateY(${isCenter ? 0 : drop}px)`
+          return (
+            <div
+              key={item.id}
+              className="absolute will-change-transform"
+              style={{
+                transform,
+                opacity: hidden ? 0 : 1,
+                zIndex: isCenter ? 30 : 20 - Math.abs(off),
+                visibility: hidden ? 'hidden' : 'visible',
+                pointerEvents: hidden ? 'none' : 'auto',
+                transition: CARD_TRANSITION,
+                cursor: isCenter ? 'grab' : 'pointer',
+              }}
+              onClick={() => {
+                if (suppressClick.current) {
+                  suppressClick.current = false
+                  return
+                }
+                if (!isCenter) goTo(i)
+              }}
+            >
+              <div
+                className={`h-full transition-transform duration-200 ease-out ${
+                  isCenter ? 'touch-pan-y active:cursor-grabbing' : ''
+                }`}
+                onPointerDown={isCenter ? onDragStart : undefined}
+                onPointerMove={isCenter ? onDragMove : undefined}
+                onPointerUp={isCenter ? onDragEnd : undefined}
+                onPointerCancel={isCenter ? onDragEnd : undefined}
               >
-                <PortfolioCard item={item} active={isCenter} />
-              </motion.div>
-            )
-          })}
-        </AnimatePresence>
+                <PortfolioCard
+                  item={item}
+                  active={isCenter}
+                  onView={() => setLightbox(item)}
+                />
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* controls */}
@@ -203,6 +264,41 @@ export default function PortfolioCarousel({ dark = false }: { dark?: boolean }) 
           <ChevronRightIcon className="h-5 w-5" />
         </button>
       </div>
+
+      {/* lightbox */}
+      {lightbox && (
+        <div
+          className={`lightbox-backdrop fixed inset-0 z-50 flex items-center justify-center bg-ink/85 p-4 backdrop-blur-sm ${
+            closing ? 'lightbox-closing' : ''
+          }`}
+          onClick={closeLightbox}
+        >
+          <figure
+            className="lightbox-figure relative flex max-h-full flex-col items-center gap-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={lightbox.image}
+              alt={lightbox.title}
+              className="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl"
+              draggable={false}
+              decoding="async"
+            />
+            <figcaption className="text-xs tracking-widest text-paper/70 uppercase">
+              {lightbox.title}
+              {lightbox.subtitle ? ` - ${lightbox.subtitle}` : ''}
+            </figcaption>
+            <button
+              type="button"
+              onClick={closeLightbox}
+              aria-label="Close preview"
+              className="absolute -top-3 -right-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-paper text-ink shadow-lg transition-transform hover:scale-110"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+          </figure>
+        </div>
+      )}
     </div>
   )
 }

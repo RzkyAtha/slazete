@@ -68,7 +68,7 @@ export default function OrderForm() {
       '',
       `Name: ${name || '-'}`,
       `Currency: ${currency}`,
-      `Type: ${type.label} — base ${formatPrice(base, currency)}`,
+      `Type: ${type.label} - base ${formatPrice(base, currency)}`,
       `Characters: ${1 + extraChars}${extraChars ? ` (${extraChars} extra, +${EXTRA_CHARACTER_RATE * 100}% each)` : ''}`,
       `Add-ons: ${selectedAddons.length ? selectedAddons.map((a) => `${a.label} (${formatRange(addonRange(a, currency), currency)})`).join(', ') : 'none'}`,
       `Commercial use: ${commercial ? `yes (x${COMMERCIAL_MULTIPLIER})` : 'no'}`,
@@ -226,7 +226,7 @@ export default function OrderForm() {
               <span>
                 <span className="block text-sm font-semibold">Commercial use</span>
                 <span className="text-xs text-ink/50">
-                  merch, published books, etc — x{COMMERCIAL_MULTIPLIER} final price
+                  merch, published books, etc - x{COMMERCIAL_MULTIPLIER} final price
                 </span>
               </span>
             </label>
@@ -240,7 +240,7 @@ export default function OrderForm() {
               <span>
                 <span className="block text-sm font-semibold">Rush order</span>
                 <span className="text-xs text-ink/50">
-                  as fast as 2 days — +{(RUSH_MULTIPLIER - 1) * 100}% final price
+                  as fast as 2 days - +{(RUSH_MULTIPLIER - 1) * 100}% final price
                 </span>
               </span>
             </label>
@@ -261,7 +261,7 @@ export default function OrderForm() {
             onChange={(e) => setBrief(e.target.value)}
           />
           <p className="mt-2 text-xs text-ink/45">
-            a comprehensive brief is required — the clearer, the better the result.
+            a comprehensive brief is required - the clearer, the better the result.
           </p>
         </div>
       </div>

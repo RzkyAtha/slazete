@@ -1,4 +1,4 @@
-# Slazete — Art Commission Website Design
+# Slazete - Art Commission Website Design
 
 Date: 2026-10-19
 Status: Approved by user
@@ -20,7 +20,7 @@ A manga-styled (black/white/gray) commission website for the artist "slazete", b
 
 - Pure monochrome: ink #0a0a0a, paper #fafafa, mid grays
 - Halftone/screentone dot textures, thick manga-panel borders with hard offset shadows, speed lines in hero
-- Section headers styled as manga "chapters" (CHAPTER 01 — PRICELIST)
+- Section headers styled as manga "chapters" (CHAPTER 01 - PRICELIST)
 - Speech-bubble badges, ink underlines
 
 ## Pages
@@ -28,7 +28,7 @@ A manga-styled (black/white/gray) commission website for the artist "slazete", b
 ### Home (/)
 - Navbar: black bar, slazete_logo_white.png, links Home/Order
 - Hero: halftone + speed-line background, slazete_logo_nobg.png centerpiece, CTA to /order
-- Portfolio: fan-deck carousel (3 visible cards — center upright in front, sides rotated behind), prev/next + dots. Card placeholders styled like reference image ("illustration soon!"). Data lives in src/data/portfolio.ts for easy swapping with real art.
+- Portfolio: fan-deck carousel (3 visible cards - center upright in front, sides rotated behind), prev/next + dots. Card placeholders styled like reference image ("illustration soon!"). Data lives in src/data/portfolio.ts for easy swapping with real art.
 
 ### Order (/order)
 - Will draw / Won't draw badges
@@ -39,7 +39,7 @@ A manga-styled (black/white/gray) commission website for the artist "slazete", b
 
 ## Config
 
-- `src/config.ts`: WHATSAPP_NUMBER placeholder `6281234567890`, artist name, socials — single place to edit.
+- `src/config.ts`: WHATSAPP_NUMBER placeholder `6281234567890`, artist name, socials - single place to edit.
 
 ## Pricing rules (from commission sheet)
 
