@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Permanent+Marker&family=Poppins:wght@700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Anton', 'Arial Black', sans-serif;
+  --font-doodle: 'Permanent Marker', 'Segoe Print', cursive;
+  --font-poppins: 'Poppins', sans-serif;
+  --font-body: 'Space Grotesk', 'Segoe UI', sans-serif;
+  --color-ink: #0a0a0a;
+  --color-paper: #fafafa;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+::selection {
+  background: #0a0a0a;
+  color: #fafafa;
+}
+
+/* ---------- textures (subtle, decorative only) ---------- */
+
+.halftone {
+  background-image: radial-gradient(circle, rgba(10, 10, 10, 0.16) 1px, transparent 1.1px);
+  background-size: 12px 12px;
+}
+
+.halftone-white {
+  background-image: radial-gradient(circle, rgba(250, 250, 250, 0.12) 1px, transparent 1.1px);
+  background-size: 12px 12px;
+}
+
+/* ---------- components ---------- */
+
+/* minimal dark button */
+.btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  background: #0a0a0a;
+  color: #fafafa;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background 150ms ease, transform 150ms ease;
+  cursor: pointer;
+}
+
+.btn-dark:hover {
+  background: #262626;
+}
+
+/* minimal outline button */
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  border: 1.5px solid #0a0a0a;
+  background: transparent;
+  color: #0a0a0a;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background 150ms ease, color 150ms ease;
+  cursor: pointer;
+}
+
+.btn-outline:hover {
+  background: #0a0a0a;
+  color: #fafafa;
+}
+
+/* sketchy hand-drawn offset frame around buttons */
+.btn-sketch {
+  position: relative;
+}
+
+.btn-sketch::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1.5px solid #0a0a0a;
+  border-radius: 1.1rem;
+  transform: rotate(-1.4deg);
+  pointer-events: none;
+  transition: transform 150ms ease;
+}
+
+.btn-sketch:hover::after {
+  transform: rotate(0.9deg);
+}
+
+/* small uppercase eyebrow label */
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(10, 10, 10, 0.45);
+}
+
+/* minimal form field */
+.field {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1.5px solid rgba(10, 10, 10, 0.18);
+  background: #ffffff;
+  padding: 0.65rem 1rem;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.field::placeholder {
+  color: rgba(10, 10, 10, 0.35);
+}
+
+.field:focus {
+  border-color: #0a0a0a;
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.08);
+}
+
+/* rounded minimal checkbox */
+.ink-check {
+  appearance: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 0.3rem;
+  border: 1.5px solid rgba(10, 10, 10, 0.35);
+  background: #ffffff;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.ink-check:checked {
+  background: #0a0a0a;
+  border-color: #0a0a0a;
+}
+
+.ink-check:checked::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: #fafafa;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.ink-radio {
+  appearance: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1.5px solid rgba(10, 10, 10, 0.35);
+  border-radius: 9999px;
+  background: #ffffff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.ink-radio:checked {
+  border-color: #0a0a0a;
+  box-shadow: inset 0 0 0 3.5px #ffffff;
+  background: #0a0a0a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
