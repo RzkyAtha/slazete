@@ -42,7 +42,7 @@ export default function Navbar() {
               }`}
             >
               <img
-                src="/slazete_logo_nobg.png"
+                src="/slazete_logo_nobg.webp"
                 alt=""
                 className="h-9 w-auto object-contain"
               />

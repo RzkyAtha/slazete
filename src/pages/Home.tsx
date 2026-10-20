@@ -22,7 +22,7 @@ export default function Home() {
       <section id="hero" className="relative overflow-hidden bg-white pt-16">
         <div className="mx-auto flex max-w-6xl flex-col items-center px-4 pt-16 pb-10 sm:px-6 sm:pt-12 sm:pb-8">
           <img
-            src="/slazete_logo_nobg.png"
+            src="/slazete_logo_nobg.webp"
             alt="slazete — art commission"
             className="w-full max-w-xs sm:max-w-sm"
           />
@@ -57,14 +57,14 @@ export default function Home() {
       {/* ─── PORTFOLIO ─── */}
       <div ref={portfolioRef} className="halftone-white relative overflow-hidden bg-[#111111] py-20 sm:py-28">
         <motion.img
-          src="/guy_doodle.png"
+          src="/guy_doodle.webp"
           alt=""
           aria-hidden="true"
           style={{ x: guyX, opacity: doodleOpacity }}
           className="pointer-events-none absolute -top-6 -left-64 w-[30rem] sm:-top-32 sm:-left-96 sm:w-[46rem] lg:w-[62rem]"
         />
         <motion.img
-          src="/girl_doodle.png"
+          src="/girl_doodle.webp"
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute -top-6 -right-64 w-[30rem] sm:-top-32 sm:-right-96 sm:w-[46rem] lg:w-[62rem]"
