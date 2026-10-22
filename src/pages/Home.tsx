@@ -126,7 +126,7 @@ export default function Home() {
           aria-hidden="true"
           decoding="async"
           style={{ transform: 'translate3d(15vw, 0, 0)', opacity: 0.4 }}
-          className="pointer-events-none absolute -top-20 -left-48 w-[24rem] will-change-transform sm:-top-32 sm:-left-96 sm:w-[46rem] lg:w-[62rem]"
+          className="pointer-events-none absolute -top-20 -left-56 w-[24rem] will-change-transform sm:-top-32 sm:-left-96 sm:w-[46rem] lg:w-[62rem]"
         />
         <img
           ref={girlRef}
@@ -135,7 +135,7 @@ export default function Home() {
           aria-hidden="true"
           decoding="async"
           style={{ transform: 'translate3d(-15vw, 0, 0)', opacity: 0.4 }}
-          className="pointer-events-none absolute -top-20 -right-48 w-[24rem] will-change-transform sm:-top-32 sm:-right-96 sm:w-[46rem] lg:w-[62rem]"
+          className="pointer-events-none absolute -top-20 -right-56 w-[24rem] will-change-transform sm:-top-32 sm:-right-96 sm:w-[46rem] lg:w-[62rem]"
         />
 
         {/* white torn paper edge covering the doodle tops */}
@@ -155,7 +155,7 @@ export default function Home() {
           <MangaPanel dark center title="Price list" titleImage="/pricelist.png" id="prices" className="scroll-mt-20">
             <p className="mx-auto -mt-4 mb-10 max-w-xl text-center text-paper/60">
               check the price list, read the terms, then fill the form - your
-              order goes straight to my inbox with a ready-made brief.
+              order goes straight to my DMs with a ready-made brief.
             </p>
             <PriceTable />
           </MangaPanel>
@@ -166,8 +166,8 @@ export default function Home() {
 
           <MangaPanel dark center title="Order form" id="order-form" className="scroll-mt-20">
             <p className="mx-auto -mt-4 mb-10 max-w-xl text-center text-paper/60">
-              fill this in and hit send - a formatted order email will open in
-              your mail app. no account needed, no back-and-forth guessing.
+              fill this in and hit send - pick instagram or tiktok, and your
+              order brief is copied ready to paste in the DM.
             </p>
             <OrderForm dark />
           </MangaPanel>

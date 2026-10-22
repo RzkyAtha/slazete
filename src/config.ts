@@ -6,8 +6,10 @@ export const WHATSAPP_NUMBER = '6281234567890'
 
 export const ARTIST_NAME = 'slazete'
 
-// commission orders are sent here
-export const ORDER_EMAIL = 'slazete@gmail.com'
+// commission orders go to DMs - no prefill API exists, so the brief is
+// copied to clipboard and the DM/profile is opened for pasting
+export const INSTAGRAM_DM_URL = 'https://ig.me/m/slazete'
+export const TIKTOK_PROFILE_URL = 'https://tiktok.com/@slazete_'
 
 export type SocialIcon = 'instagram' | 'x' | 'tiktok' | 'whatsapp'
 

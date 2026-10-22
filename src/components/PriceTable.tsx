@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   ADDONS,
   COMMISSION_TYPES,
@@ -6,9 +7,10 @@ import {
   WONT_DRAW,
   formatRange,
 } from '../data/commission'
-import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, QuestionMarkCircleIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 export default function PriceTable() {
+  const [openHint, setOpenHint] = useState<string | null>(null)
   return (
     <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
       {/* base price table */}
@@ -81,9 +83,24 @@ export default function PriceTable() {
               key={a.id}
               className="flex items-baseline justify-between gap-4 border-b border-ink/10 py-3 text-sm last:border-0 sm:last:border-b"
             >
-              <span>
+              <span className="relative">
                 {a.label}
-                {a.hint && <span className="ml-1.5 text-ink/40">({a.hint})</span>}
+                {a.hint && (
+                  <button
+                    type="button"
+                    aria-label={`More info: ${a.label}`}
+                    aria-expanded={openHint === a.id}
+                    onClick={() => setOpenHint(openHint === a.id ? null : a.id)}
+                    className="ml-1.5 inline-flex h-4.5 w-4.5 cursor-pointer items-center justify-center align-middle text-ink/40 transition-colors hover:text-ink"
+                  >
+                    <QuestionMarkCircleIcon className="h-4 w-4" />
+                  </button>
+                )}
+                {openHint === a.id && a.hint && (
+                  <span className="absolute bottom-full left-0 z-10 mb-1.5 w-44 rounded-lg bg-ink px-3 py-2 text-xs leading-snug font-normal whitespace-normal text-paper normal-case shadow-lg">
+                    {a.hint}
+                  </span>
+                )}
               </span>
               <span className="font-semibold whitespace-nowrap">
                 {formatRange({ min: a.idr ?? a.idrMin ?? 0, max: a.idr ?? a.idrMax ?? 0 }, 'IDR')}

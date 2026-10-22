@@ -1,5 +1,11 @@
 import { useMemo, useState } from 'react'
-import { MinusIcon, PlusIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
+import {
+  MinusIcon,
+  PlusIcon,
+  PaperAirplaneIcon,
+  XMarkIcon,
+  ClipboardDocumentCheckIcon,
+} from '@heroicons/react/24/outline'
 import {
   ADDONS,
   COMMISSION_TYPES,
@@ -14,7 +20,7 @@ import {
   type Currency,
   type PriceRange,
 } from '../data/commission'
-import { ARTIST_NAME, ORDER_EMAIL } from '../config'
+import { ARTIST_NAME, INSTAGRAM_DM_URL, TIKTOK_PROFILE_URL } from '../config'
 
 const optionCard = (active: boolean) =>
   `flex cursor-pointer items-start gap-3 rounded-xl border bg-white p-4 transition-colors ${
@@ -63,7 +69,7 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
 
   const selectedAddons = ADDONS.filter((a) => addons.has(a.id))
 
-  const mailBody = useMemo(() => {
+  const orderMessage = useMemo(() => {
     const lines = [
       `Hi ${ARTIST_NAME}! I'd like to order a commission.`,
       '',
@@ -82,9 +88,20 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
     return lines.join('\n')
   }, [name, currency, type, base, extraChars, selectedAddons, commercial, rush, estimate, brief])
 
-  const mailSubject = `Commission order - ${name || 'unnamed'} - ${type.label}`
-  const mailHref = `mailto:${ORDER_EMAIL}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`
   const ready = name.trim().length > 0 && brief.trim().length > 0
+  const [dmOpen, setDmOpen] = useState(false)
+  const [copied, setCopied] = useState<string | null>(null)
+
+  // no prefill API for IG/TikTok DMs - copy the brief, then open the DM/profile
+  const sendVia = async (platform: 'instagram' | 'tiktok') => {
+    try {
+      await navigator.clipboard.writeText(orderMessage)
+      setCopied(platform)
+    } catch {
+      // clipboard blocked - still open the target so they can type manually
+    }
+    window.open(platform === 'instagram' ? INSTAGRAM_DM_URL : TIKTOK_PROFILE_URL, '_blank')
+  }
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr]">
@@ -107,14 +124,17 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
         {/* currency */}
         <fieldset>
           <legend className={labelCls}>Currency</legend>
-          <div className="flex gap-3">
+          <div className="relative flex w-fit rounded-full border border-paper/25">
+            <span
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 w-1/2 rounded-full bg-white transition-transform duration-200 ease-out"
+              style={{ transform: `translateX(${currency === 'IDR' ? 0 : 100}%)` }}
+            />
             {CURRENCY.map((c) => (
               <label
                 key={c}
-                className={`flex cursor-pointer items-center gap-2.5 rounded-full border px-6 py-2.5 text-sm font-semibold transition-colors ${
-                  currency === c
-                    ? 'border-ink bg-ink text-paper'
-                    : 'border-ink/20 bg-white hover:border-ink/50'
+                className={`relative z-10 flex cursor-pointer items-center gap-2.5 rounded-full px-6 py-2.5 text-sm font-semibold transition-colors duration-200 ${
+                  currency === c ? 'text-ink' : 'text-paper/60 hover:text-paper'
                 }`}
               >
                 <input
@@ -133,14 +153,19 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
         {/* type */}
         <fieldset>
           <legend className={labelCls}>Commission type</legend>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="relative grid grid-cols-3 divide-x divide-ink/10 overflow-hidden rounded-lg border border-ink/15 bg-white">
+            <span
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 w-1/3 bg-ink transition-transform duration-200 ease-out"
+              style={{
+                transform: `translateX(${COMMISSION_TYPES.findIndex((t) => t.id === typeId) * 100}%)`,
+              }}
+            />
             {COMMISSION_TYPES.map((t) => (
               <label
                 key={t.id}
-                className={`cursor-pointer rounded-xl border p-2.5 transition-all sm:p-4 ${
-                  typeId === t.id
-                    ? 'border-ink bg-ink text-paper ring-2 ring-paper'
-                    : 'border-ink/15 bg-white hover:border-ink/40'
+                className={`relative z-10 cursor-pointer p-2.5 transition-colors duration-200 sm:p-4 ${
+                  typeId === t.id ? 'text-paper' : 'hover:bg-ink/5'
                 }`}
               >
                 <input
@@ -344,17 +369,17 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
               </p>
             </div>
 
-            <a
-              href={ready ? mailHref : undefined}
-              rel="noreferrer"
+            <button
+              type="button"
+              onClick={() => ready && setDmOpen(true)}
               aria-disabled={!ready}
               className={`btn-dark mt-3 w-full px-6 py-3.5 text-sm tracking-widest uppercase ${
-                ready ? '' : 'pointer-events-none opacity-35'
+                ready ? '' : 'cursor-not-allowed opacity-35'
               }`}
             >
               <PaperAirplaneIcon className="h-4 w-4" />
-              Send via Email
-            </a>
+              Send order
+            </button>
             {!ready && (
               <p className="text-center text-xs text-ink/45">
                 fill in your name & brief to enable ordering
@@ -363,6 +388,71 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
           </div>
         </div>
       </aside>
+
+      {/* ─── DM picker popup ─── */}
+      {dmOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/70 p-4"
+          onClick={() => {
+            setDmOpen(false)
+            setCopied(null)
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Choose where to send your order"
+            className="w-full max-w-sm rounded-2xl bg-white p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="font-display text-2xl tracking-wide uppercase">Send via DM</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-ink/55">
+                  your order brief is copied automatically - just paste it into the chat.
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => {
+                  setDmOpen(false)
+                  setCopied(null)
+                }}
+                className="cursor-pointer rounded-full p-1.5 text-ink/40 transition-colors hover:bg-ink/5 hover:text-ink"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2.5">
+              {(
+                [
+                  { id: 'instagram', label: 'Instagram DM', href: INSTAGRAM_DM_URL },
+                  { id: 'tiktok', label: 'TikTok DM', href: TIKTOK_PROFILE_URL },
+                ] as const
+              ).map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => sendVia(p.id)}
+                  className="flex cursor-pointer items-center justify-between rounded-xl border border-ink/15 px-5 py-3.5 text-sm font-semibold transition-colors hover:border-ink hover:bg-ink hover:text-paper"
+                >
+                  <span>{p.label}</span>
+                  {copied === p.id ? (
+                    <span className="flex items-center gap-1.5 text-xs font-medium">
+                      <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                      copied!
+                    </span>
+                  ) : (
+                    <span className="text-xs font-medium text-ink/40">copy & open</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
