@@ -121,7 +121,7 @@ export default function Home() {
       <div ref={sectionRef} className="relative overflow-hidden bg-[#111111] py-20 sm:py-28">
         <img
           ref={guyRef}
-          src="/doodle1.png"
+          src="/doodle1.webp"
           alt=""
           aria-hidden="true"
           decoding="async"
@@ -130,7 +130,7 @@ export default function Home() {
         />
         <img
           ref={girlRef}
-          src="/doodle2.png"
+          src="/doodle2.webp"
           alt=""
           aria-hidden="true"
           decoding="async"
@@ -152,7 +152,7 @@ export default function Home() {
         </svg>
 
         <div ref={contentRef} className="reveal relative z-10 flex flex-col gap-24">
-          <MangaPanel dark center title="Price list" titleImage="/pricelist.png" id="prices" className="scroll-mt-20">
+          <MangaPanel dark center title="Price list" titleImage="/pricelist.webp" id="prices" className="scroll-mt-20">
             <p className="mx-auto -mt-4 mb-10 max-w-xl text-center text-paper/60">
               check the price list, read the terms, then fill the form - your
               order goes straight to my DMs with a ready-made brief.
@@ -160,7 +160,7 @@ export default function Home() {
             <PriceTable />
           </MangaPanel>
 
-          <MangaPanel dark center title="Terms of service" titleImage="/TOS.png" id="terms" className="scroll-mt-20">
+          <MangaPanel dark center title="Terms of service" titleImage="/TOS.webp" id="terms" className="scroll-mt-20">
             <TermsSection />
           </MangaPanel>
 

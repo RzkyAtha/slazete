@@ -13,9 +13,9 @@ export interface CommissionType {
 }
 
 export const COMMISSION_TYPES: CommissionType[] = [
-  { id: 'headshot', label: 'Headshot / Bust up', idr: 150, usd: 50, image: '/BustUp.png' },
-  { id: 'halfbody', label: 'Half body / Thighs up', idr: 300, usd: 70, image: '/HalfBody.png' },
-  { id: 'fullbody', label: 'Full body', idr: 500, usd: 90, image: '/FullBody.png' },
+  { id: 'headshot', label: 'Headshot / Bust up', idr: 150, usd: 50, image: '/BustUp.webp' },
+  { id: 'halfbody', label: 'Half body / Thighs up', idr: 300, usd: 70, image: '/HalfBody.webp' },
+  { id: 'fullbody', label: 'Full body', idr: 500, usd: 90, image: '/FullBody.webp' },
 ]
 
 export type AddonKind = 'fixed' | 'range'
