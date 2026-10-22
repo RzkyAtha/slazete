@@ -14,16 +14,17 @@ import {
   type Currency,
   type PriceRange,
 } from '../data/commission'
-import { ARTIST_NAME, WHATSAPP_NUMBER } from '../config'
-
-const labelCls = 'mb-2.5 block text-xs font-semibold tracking-[0.25em] text-ink/45 uppercase'
+import { ARTIST_NAME, ORDER_EMAIL } from '../config'
 
 const optionCard = (active: boolean) =>
   `flex cursor-pointer items-start gap-3 rounded-xl border bg-white p-4 transition-colors ${
     active ? 'border-ink' : 'border-ink/15 hover:border-ink/40'
   }`
 
-export default function OrderForm() {
+export default function OrderForm({ dark = false }: { dark?: boolean }) {
+  const labelCls = `mb-2.5 block text-xs font-semibold tracking-[0.25em] uppercase ${
+    dark ? 'text-paper/45' : 'text-ink/45'
+  }`
   const [name, setName] = useState('')
   const [currency, setCurrency] = useState<Currency>('IDR')
   const [typeId, setTypeId] = useState(COMMISSION_TYPES[0].id)
@@ -62,7 +63,7 @@ export default function OrderForm() {
 
   const selectedAddons = ADDONS.filter((a) => addons.has(a.id))
 
-  const waMessage = useMemo(() => {
+  const mailBody = useMemo(() => {
     const lines = [
       `Hi ${ARTIST_NAME}! I'd like to order a commission.`,
       '',
@@ -81,7 +82,8 @@ export default function OrderForm() {
     return lines.join('\n')
   }, [name, currency, type, base, extraChars, selectedAddons, commercial, rush, estimate, brief])
 
-  const waHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waMessage)}`
+  const mailSubject = `Commission order - ${name || 'unnamed'} - ${type.label}`
+  const mailHref = `mailto:${ORDER_EMAIL}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`
   const ready = name.trim().length > 0 && brief.trim().length > 0
 
   return (
@@ -131,13 +133,13 @@ export default function OrderForm() {
         {/* type */}
         <fieldset>
           <legend className={labelCls}>Commission type</legend>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {COMMISSION_TYPES.map((t) => (
               <label
                 key={t.id}
-                className={`cursor-pointer rounded-xl border p-4 transition-all ${
+                className={`cursor-pointer rounded-xl border p-2.5 transition-all sm:p-4 ${
                   typeId === t.id
-                    ? 'border-ink bg-ink text-paper'
+                    ? 'border-ink bg-ink text-paper ring-2 ring-paper'
                     : 'border-ink/15 bg-white hover:border-ink/40'
                 }`}
               >
@@ -148,8 +150,22 @@ export default function OrderForm() {
                   checked={typeId === t.id}
                   onChange={() => setTypeId(t.id)}
                 />
-                <span className="block text-sm font-semibold">{t.label}</span>
-                <span className="mt-1.5 block font-display text-2xl">
+                {t.image && (
+                  <span className="mb-2 block h-28 sm:mb-3 sm:h-52">
+                    <img
+                      src={t.image}
+                      alt=""
+                      aria-hidden="true"
+                      draggable={false}
+                      decoding="async"
+                      className={`h-full w-full object-contain object-center ${
+                        typeId === t.id ? 'invert' : ''
+                      }`}
+                    />
+                  </span>
+                )}
+                <span className="block text-xs font-semibold sm:text-sm">{t.label}</span>
+                <span className="mt-1 block font-display text-lg sm:mt-1.5 sm:text-2xl">
                   {formatPrice(currency === 'IDR' ? t.idr : t.usd, currency)}
                 </span>
               </label>
@@ -160,7 +176,10 @@ export default function OrderForm() {
         {/* characters */}
         <fieldset>
           <legend className={labelCls}>
-            Characters <span className="normal-case text-ink/35">(max {MAX_CHARACTERS})</span>
+            Characters{' '}
+            <span className={`normal-case ${dark ? 'text-paper/35' : 'text-ink/35'}`}>
+              (max {MAX_CHARACTERS})
+            </span>
           </legend>
           <div className="flex items-center gap-4">
             <button
@@ -182,7 +201,7 @@ export default function OrderForm() {
             >
               <PlusIcon className="h-4 w-4" />
             </button>
-            <span className="text-sm text-ink/50">
+            <span className={`text-sm ${dark ? 'text-paper/50' : 'text-ink/50'}`}>
               +{EXTRA_CHARACTER_RATE * 100}% base price per extra character
             </span>
           </div>
@@ -260,7 +279,7 @@ export default function OrderForm() {
             value={brief}
             onChange={(e) => setBrief(e.target.value)}
           />
-          <p className="mt-2 text-xs text-ink/45">
+          <p className={`mt-2 text-xs ${dark ? 'text-paper/45' : 'text-ink/45'}`}>
             a comprehensive brief is required - the clearer, the better the result.
           </p>
         </div>
@@ -326,8 +345,7 @@ export default function OrderForm() {
             </div>
 
             <a
-              href={ready ? waHref : undefined}
-              target="_blank"
+              href={ready ? mailHref : undefined}
               rel="noreferrer"
               aria-disabled={!ready}
               className={`btn-dark mt-3 w-full px-6 py-3.5 text-sm tracking-widest uppercase ${
@@ -335,7 +353,7 @@ export default function OrderForm() {
               }`}
             >
               <PaperAirplaneIcon className="h-4 w-4" />
-              Send via WhatsApp
+              Send via Email
             </a>
             {!ready && (
               <p className="text-center text-xs text-ink/45">

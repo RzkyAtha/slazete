@@ -8,11 +8,10 @@ const GROUPS: { title: string; items: string[] }[] = [
 
 export default function TermsSection() {
   return (
-    <div className="grid gap-5 md:grid-cols-3">
-      {GROUPS.map((g, gi) => (
+    <div className="grid gap-5">
+      {GROUPS.map((g) => (
         <div key={g.title} className="flex flex-col rounded-2xl border border-ink/10 bg-white p-6">
-          <p className="font-display text-3xl text-ink/15">0{gi + 1}</p>
-          <h3 className="mt-1 text-xs font-semibold tracking-[0.25em] text-ink uppercase">
+          <h3 className="text-xs font-semibold tracking-[0.25em] text-ink uppercase">
             {g.title}
           </h3>
           <ul className="mt-5 flex flex-col gap-3.5 text-sm leading-relaxed text-ink/75">

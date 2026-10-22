@@ -1,14 +1,16 @@
 import { useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
 import { ArrowRightIcon } from '@heroicons/react/24/outline'
 import MangaPanel from '../components/MangaPanel'
-import PortfolioCarousel from '../components/PortfolioCarousel'
+import PriceTable from '../components/PriceTable'
+import TermsSection from '../components/TermsSection'
+import OrderForm from '../components/OrderForm'
+import SocialLinks from '../components/SocialLinks'
 
 export default function Home() {
-  const portfolioRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef<HTMLDivElement>(null)
   const guyRef = useRef<HTMLImageElement>(null)
   const girlRef = useRef<HTMLImageElement>(null)
-  const revealRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   // Doodle parallax + reveal, driven by a rAF lerp loop and IntersectionObserver
   // instead of a JS animation library. Progress math matches the old offsets:
@@ -16,9 +18,9 @@ export default function Home() {
   useEffect(() => {
     const guy = guyRef.current
     const girl = girlRef.current
-    const section = portfolioRef.current
-    const reveal = revealRef.current
-    if (!guy || !girl || !section || !reveal) return
+    const section = sectionRef.current
+    const content = contentRef.current
+    if (!guy || !girl || !section || !content) return
 
     let cur = 0
     let tgt = 0
@@ -28,7 +30,7 @@ export default function Home() {
       const x = ((1 - p) * 15).toFixed(3)
       guy.style.transform = `translate3d(${x}vw, 0, 0)`
       girl.style.transform = `translate3d(-${x}vw, 0, 0)`
-      const op = (0.45 - p * 0.3).toFixed(3)
+      const op = (0.4 - p * 0.2).toFixed(3)
       guy.style.opacity = op
       girl.style.opacity = op
     }
@@ -45,6 +47,8 @@ export default function Home() {
       const top = section.getBoundingClientRect().top
       tgt = Math.min(1, Math.max(0, (vh - top) / (vh * 0.65)))
       if (!raf) raf = requestAnimationFrame(loop)
+      // back at the very top: keep everything hidden
+      if (window.scrollY <= 0) content.classList.remove('reveal-in')
     }
 
     measure()
@@ -53,11 +57,16 @@ export default function Home() {
 
     const io = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) reveal.classList.toggle('reveal-in', e.isIntersecting)
+        for (const e of entries) {
+          // only reveal once the user has actually scrolled away from the hero
+          if (e.isIntersecting && window.scrollY > 0) content.classList.add('reveal-in')
+          else if (!e.isIntersecting && e.boundingClientRect.top > 0)
+            content.classList.remove('reveal-in')
+        }
       },
-      { threshold: 0.25 },
+      { rootMargin: '0px 0px -40% 0px' },
     )
-    io.observe(reveal)
+    io.observe(content)
 
     return () => {
       window.removeEventListener('scroll', measure)
@@ -71,7 +80,7 @@ export default function Home() {
     <>
       {/* ─── HERO ─── */}
       <section id="hero" className="relative overflow-hidden bg-white pt-16">
-        <div className="mx-auto flex max-w-6xl flex-col items-center px-4 pt-16 pb-10 sm:px-6 sm:pt-12 sm:pb-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center px-4 pt-16 pb-6 sm:px-6 sm:pt-12 sm:pb-5">
           <img
             src="/slazete_logo_nobg.webp"
             alt="slazete - art commission"
@@ -79,18 +88,22 @@ export default function Home() {
           />
 
           <div className="mt-10 flex items-center justify-center gap-3">
-            <Link
-              to="/order"
-              className="btn-dark px-9 py-3.5 font-poppins text-xl font-bold shadow-[0_18px_35px_-10px_rgba(10,10,10,0.5)] transition-shadow duration-200 hover:shadow-[0_24px_45px_-10px_rgba(10,10,10,0.55)]"
+            <a
+              href="#order-form"
+              className="btn-dark px-7 py-3 font-poppins text-base font-bold shadow-[0_18px_35px_-10px_rgba(10,10,10,0.5)] transition-shadow duration-200 hover:shadow-[0_24px_45px_-10px_rgba(10,10,10,0.55)] sm:px-9 sm:py-3.5 sm:text-xl"
             >
               Order
-            </Link>
-            <a
-              href="#portfolio"
-              className="btn-outline border-ink/20 px-9 py-3.5 font-poppins text-xl font-bold shadow-[0_18px_35px_-12px_rgba(10,10,10,0.22)] transition-shadow duration-200 hover:shadow-[0_24px_45px_-12px_rgba(10,10,10,0.3)]"
-            >
-              Portfolio
             </a>
+            <a
+              href="#prices"
+              className="btn-outline border-ink/20 px-7 py-3 font-poppins text-base font-bold shadow-[0_18px_35px_-12px_rgba(10,10,10,0.22)] transition-shadow duration-200 hover:shadow-[0_24px_45px_-12px_rgba(10,10,10,0.3)] sm:px-9 sm:py-3.5 sm:text-xl"
+            >
+              Price list
+            </a>
+          </div>
+
+          <div className="mt-4">
+            <SocialLinks />
           </div>
         </div>
 
@@ -102,28 +115,27 @@ export default function Home() {
             <span className="hidden sm:inline">oc · fanart · duo</span>
           </div>
         </div>
-
       </section>
 
-      {/* ─── PORTFOLIO ─── */}
-      <div ref={portfolioRef} className="halftone-white relative overflow-hidden bg-[#111111] py-20 sm:py-28">
+      {/* ─── ORDER (dark panel w/ doodles + torn edge) ─── */}
+      <div ref={sectionRef} className="relative overflow-hidden bg-[#111111] py-20 sm:py-28">
         <img
           ref={guyRef}
-          src="/guy_doodle.webp"
+          src="/doodle1.png"
           alt=""
           aria-hidden="true"
           decoding="async"
-          style={{ transform: 'translate3d(15vw, 0, 0)', opacity: 0.45 }}
-          className="pointer-events-none absolute -top-6 -left-64 w-[30rem] will-change-transform sm:-top-32 sm:-left-96 sm:w-[46rem] lg:w-[62rem]"
+          style={{ transform: 'translate3d(15vw, 0, 0)', opacity: 0.4 }}
+          className="pointer-events-none absolute -top-20 -left-48 w-[24rem] will-change-transform sm:-top-32 sm:-left-96 sm:w-[46rem] lg:w-[62rem]"
         />
         <img
           ref={girlRef}
-          src="/girl_doodle.webp"
+          src="/doodle2.png"
           alt=""
           aria-hidden="true"
           decoding="async"
-          style={{ transform: 'translate3d(-15vw, 0, 0)', opacity: 0.45 }}
-          className="pointer-events-none absolute -top-6 -right-64 w-[30rem] will-change-transform sm:-top-32 sm:-right-96 sm:w-[46rem] lg:w-[62rem]"
+          style={{ transform: 'translate3d(-15vw, 0, 0)', opacity: 0.4 }}
+          className="pointer-events-none absolute -top-20 -right-48 w-[24rem] will-change-transform sm:-top-32 sm:-right-96 sm:w-[46rem] lg:w-[62rem]"
         />
 
         {/* white torn paper edge covering the doodle tops */}
@@ -138,12 +150,26 @@ export default function Home() {
             d="M0 0 L1200 0 L1200 12 L1115 22 L1050 20 L985 32 L920 30 L855 44 L790 42 L725 50 L660 60 L600 82 L565 52 L520 58 L460 40 L395 44 L330 28 L265 30 L200 18 L130 22 L70 6 L0 14 Z"
           />
         </svg>
-        <div ref={revealRef} className="reveal relative z-10">
-          <MangaPanel dark center title="Portfolio" id="portfolio">
-            <p className="mx-auto -mt-4 mb-10 max-w-xl text-center text-paper">
-              a rotating shelf of past commissions and samples - flip through the stack.
+
+        <div ref={contentRef} className="reveal relative z-10 flex flex-col gap-24">
+          <MangaPanel dark center title="Price list" titleImage="/pricelist.png" id="prices" className="scroll-mt-20">
+            <p className="mx-auto -mt-4 mb-10 max-w-xl text-center text-paper/60">
+              check the price list, read the terms, then fill the form - your
+              order goes straight to my inbox with a ready-made brief.
             </p>
-            <PortfolioCarousel dark />
+            <PriceTable />
+          </MangaPanel>
+
+          <MangaPanel dark center title="Terms of service" titleImage="/TOS.png" id="terms" className="scroll-mt-20">
+            <TermsSection />
+          </MangaPanel>
+
+          <MangaPanel dark center title="Order form" id="order-form" className="scroll-mt-20">
+            <p className="mx-auto -mt-4 mb-10 max-w-xl text-center text-paper/60">
+              fill this in and hit send - a formatted order email will open in
+              your mail app. no account needed, no back-and-forth guessing.
+            </p>
+            <OrderForm dark />
           </MangaPanel>
         </div>
       </div>
@@ -156,13 +182,13 @@ export default function Home() {
         <h2 className="mt-3 font-display text-4xl tracking-wide uppercase sm:text-5xl">
           Got a character in mind?
         </h2>
-        <Link
-          to="/order"
+        <a
+          href="#order-form"
           className="mt-8 inline-flex items-center gap-2 rounded-xl bg-paper px-8 py-3 text-sm font-semibold tracking-widest text-ink uppercase transition-colors hover:bg-paper/85"
         >
           Check prices & order
           <ArrowRightIcon className="h-4 w-4" />
-        </Link>
+        </a>
       </section>
     </>
   )

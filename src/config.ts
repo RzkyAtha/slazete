@@ -6,6 +6,9 @@ export const WHATSAPP_NUMBER = '6281234567890'
 
 export const ARTIST_NAME = 'slazete'
 
+// commission orders are sent here
+export const ORDER_EMAIL = 'slazete@gmail.com'
+
 export type SocialIcon = 'instagram' | 'x' | 'tiktok' | 'whatsapp'
 
 // TODO: replace with the artist's real profile URLs
