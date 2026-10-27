@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react'
-import { ArrowRightIcon } from '@heroicons/react/24/outline'
 import MangaPanel from '../components/MangaPanel'
-import PriceTable from '../components/PriceTable'
+import PriceList from '../components/PriceList'
 import TermsSection from '../components/TermsSection'
 import OrderForm from '../components/OrderForm'
 import SocialLinks from '../components/SocialLinks'
+import { useLang } from '../i18n'
 
 export default function Home() {
+  const { t } = useLang()
   const sectionRef = useRef<HTMLDivElement>(null)
   const guyRef = useRef<HTMLImageElement>(null)
   const girlRef = useRef<HTMLImageElement>(null)
@@ -92,13 +93,13 @@ export default function Home() {
               href="#order-form"
               className="btn-dark px-7 py-3 font-poppins text-base font-bold shadow-[0_18px_35px_-10px_rgba(10,10,10,0.5)] transition-shadow duration-200 hover:shadow-[0_24px_45px_-10px_rgba(10,10,10,0.55)] sm:px-9 sm:py-3.5 sm:text-xl"
             >
-              Order
+              {t.hero.order}
             </a>
             <a
               href="#prices"
               className="btn-outline border-ink/20 px-7 py-3 font-poppins text-base font-bold shadow-[0_18px_35px_-12px_rgba(10,10,10,0.22)] transition-shadow duration-200 hover:shadow-[0_24px_45px_-12px_rgba(10,10,10,0.3)] sm:px-9 sm:py-3.5 sm:text-xl"
             >
-              Price list
+              {t.hero.prices}
             </a>
           </div>
 
@@ -108,11 +109,12 @@ export default function Home() {
         </div>
 
         <div className="border-t border-ink/10 py-4">
-          <div className="flex justify-center gap-10 text-[11px] font-semibold tracking-[0.3em] text-ink/40 uppercase sm:gap-16">
-            <span>headshot</span>
-            <span>half body</span>
-            <span>full body</span>
-            <span className="hidden sm:inline">oc · fanart · duo</span>
+          <div className="flex justify-center gap-10 text-[11px] font-semibold  text-ink/40 uppercase sm:gap-16">
+            {t.hero.tags.map((tag, i) => (
+              <span key={tag} className={i === 3 ? 'hidden sm:inline' : ''}>
+                {tag}
+              </span>
+            ))}
           </div>
         </div>
       </section>
@@ -152,44 +154,22 @@ export default function Home() {
         </svg>
 
         <div ref={contentRef} className="reveal relative z-10 flex flex-col gap-24">
-          <MangaPanel dark center title="Price list" titleImage="/pricelist.webp" id="prices" className="scroll-mt-20">
-            <p className="mx-auto -mt-4 mb-10 max-w-xl text-center text-paper/60">
-              check the price list, read the terms, then fill the form - your
-              order goes straight to my DMs with a ready-made brief.
-            </p>
-            <PriceTable />
-          </MangaPanel>
+          <section id="prices" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 sm:px-6">
+            <PriceList />
+          </section>
 
-          <MangaPanel dark center title="Terms of service" titleImage="/TOS.webp" id="terms" className="scroll-mt-20">
+          <section id="terms" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 sm:px-6">
             <TermsSection />
-          </MangaPanel>
+          </section>
 
-          <MangaPanel dark center title="Order form" id="order-form" className="scroll-mt-20">
+          <MangaPanel dark center title={t.sections.orderForm} id="order-form" className="scroll-mt-20">
             <p className="mx-auto -mt-4 mb-10 max-w-xl text-center text-paper/60">
-              fill this in and hit send - pick instagram or tiktok, and your
-              order brief is copied ready to paste in the DM.
+              {t.sections.orderSub}
             </p>
             <OrderForm dark />
           </MangaPanel>
         </div>
       </div>
-
-      {/* ─── CTA banner ─── */}
-      <section className="border-t border-paper/10 bg-ink py-20 text-center text-paper">
-        <p className="text-xs font-semibold tracking-[0.35em] text-paper/40 uppercase">
-          limited slots per batch
-        </p>
-        <h2 className="mt-3 font-display text-4xl tracking-wide uppercase sm:text-5xl">
-          Got a character in mind?
-        </h2>
-        <a
-          href="#order-form"
-          className="mt-8 inline-flex items-center gap-2 rounded-xl bg-paper px-8 py-3 text-sm font-semibold tracking-widest text-ink uppercase transition-colors hover:bg-paper/85"
-        >
-          Check prices & order
-          <ArrowRightIcon className="h-4 w-4" />
-        </a>
-      </section>
     </>
   )
 }

@@ -1,8 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 
 @theme {
-  --font-display: 'Anton', 'Arial Black', sans-serif;
   --font-poppins: 'Poppins', sans-serif;
   --font-body: 'Poppins', 'Segoe UI', sans-serif;
   --color-ink: #0a0a0a;
@@ -26,9 +25,18 @@ body {
 
 /* ---------- textures (subtle, decorative only) ---------- */
 
-.halftone {
-  background-image: radial-gradient(circle, rgba(10, 10, 10, 0.16) 1px, transparent 1.1px);
-  background-size: 12px 12px;
+.lines {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(10, 10, 10, 0.08) 0 1px,
+      transparent 1px 32px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(10, 10, 10, 0.08) 0 1px,
+      transparent 1px 32px
+    );
 }
 
 /* ---------- components ---------- */
@@ -119,6 +127,83 @@ body {
   inset: 2px;
   background: #fafafa;
   clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+/* inventory loadout: directional slide when switching main item */
+@keyframes loadout-slide-r {
+  0% {
+    opacity: 0;
+    transform: translateX(72px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes loadout-slide-l {
+  0% {
+    opacity: 0;
+    transform: translateX(-72px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.loadout-slide-r,
+.loadout-slide-l {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+.loadout-slide-r {
+  animation-name: loadout-slide-r;
+}
+
+.loadout-slide-l {
+  animation-name: loadout-slide-l;
+}
+
+/* inventory loadout: floating equip chips */
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.chip-in {
+  animation: chip-in 0.25s ease-out both;
+}
+
+/* thin scrollbar for the equipment column */
+.inv-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(10, 10, 10, 0.25) transparent;
+}
+
+.inv-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.inv-scroll::-webkit-scrollbar-thumb {
+  background: rgba(10, 10, 10, 0.2);
+  border-radius: 999px;
 }
 
 /* scroll reveal (same ease as the old spring transition) */

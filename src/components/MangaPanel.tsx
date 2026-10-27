@@ -34,7 +34,7 @@ export default function MangaPanel({
           />
         ) : (
           <h2
-            className={`font-display text-4xl tracking-wide uppercase sm:text-5xl ${
+            className={`font-poppins text-4xl font-extrabold tracking-tight uppercase sm:text-5xl ${
               dark ? 'text-paper' : 'text-ink'
             }`}
           >
