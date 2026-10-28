@@ -28,7 +28,7 @@ export function mailHtml(body: string): string {
       <div style="padding:26px;font-family:'Poppins','Segoe UI',Arial,sans-serif;font-size:14px;line-height:1.75;color:#1a1a1a;white-space:pre-wrap">${escapeHtml(body)}</div>
 
       <!-- footer: dark, like the site footer -->
-      <div style="background:#161616;padding:20px 26px">
+      <div style="background:#161616;padding:20px 26px;text-align:center">
         <p style="margin:0;font-size:11px;line-height:1.5;color:rgba(255,255,255,0.45)">This is an automated message sent from the website - please do not reply.</p>
         <p style="margin:14px 0 0;font-size:11px;font-weight:600;color:rgba(255,255,255,0.7)">&copy; ${year} slazete. All Rights Reserved.</p>
         <p style="margin:6px 0 0;font-size:11px;color:rgba(255,255,255,0.35)">Powered by <img src="https://slazete.com/logo_kinarya.webp" alt="" width="12" height="12" style="width:12px;height:12px;vertical-align:-2px;margin:0 2px" /> Kinaryaloka</p>
