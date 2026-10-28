@@ -13,6 +13,7 @@ export default function Footer() {
         { label: t.footer.prices, href: '#prices' },
         { label: t.footer.terms, href: '#terms' },
         { label: t.footer.orderForm, href: '#order-form' },
+        { label: t.footer.contact, href: '#contact' },
       ],
     },
     {

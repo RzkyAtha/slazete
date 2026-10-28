@@ -3,6 +3,7 @@ import MangaPanel from '../components/MangaPanel'
 import PriceList from '../components/PriceList'
 import TermsSection from '../components/TermsSection'
 import OrderForm from '../components/OrderForm'
+import ContactForm from '../components/ContactForm'
 import SocialLinks from '../components/SocialLinks'
 import { useLang } from '../i18n'
 
@@ -170,6 +171,14 @@ export default function Home() {
           </MangaPanel>
         </div>
       </div>
+
+      {/* ─── CONTACT ─── */}
+      <MangaPanel center title={t.contact.title} id="contact" className="scroll-mt-20 py-20 sm:py-24">
+        <p className="mx-auto -mt-4 mb-10 max-w-xl text-center text-ink/60">
+          {t.contact.sub}
+        </p>
+        <ContactForm />
+      </MangaPanel>
     </>
   )
 }

@@ -1,9 +1,5 @@
-import { useMemo, useState } from 'react'
-import {
-  PaperAirplaneIcon,
-  XMarkIcon,
-  ClipboardDocumentCheckIcon,
-} from '@heroicons/react/24/solid'
+import { useEffect, useMemo, useState } from 'react'
+import { PaperAirplaneIcon, CheckCircleIcon } from '@heroicons/react/24/solid'
 import LoadoutPanel from './LoadoutPanel'
 import {
   ADDONS,
@@ -17,8 +13,21 @@ import {
   formatRange,
   type Currency,
 } from '../data/commission'
-import { ARTIST_NAME, INSTAGRAM_DM_URL, TIKTOK_PROFILE_URL } from '../config'
+import { ARTIST_NAME } from '../config'
 import { useLang } from '../i18n'
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const SOCIAL_PLATFORMS = [
+  { id: 'instagram', label: 'Instagram' },
+  { id: 'x', label: 'X (Twitter)' },
+  { id: 'tiktok', label: 'TikTok' },
+  { id: 'discord', label: 'Discord' },
+  { id: 'whatsapp', label: 'WhatsApp' },
+] as const
+
+type SocialPlatformId = (typeof SOCIAL_PLATFORMS)[number]['id']
+type SendState = 'idle' | 'sending' | 'sent' | 'error'
 
 export default function OrderForm({ dark = false }: { dark?: boolean }) {
   const { t } = useLang()
@@ -26,6 +35,10 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
     dark ? 'text-paper/45' : 'text-ink/45'
   }`
   const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [socialPlatform, setSocialPlatform] = useState<SocialPlatformId>('instagram')
+  const [socialUsername, setSocialUsername] = useState('')
+  const [honeypot, setHoneypot] = useState('')
   const [currency, setCurrency] = useState<Currency>('IDR')
   const [typeId, setTypeId] = useState(COMMISSION_TYPES[0].id)
   const [extraChars, setExtraChars] = useState(0)
@@ -33,10 +46,13 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
   const [commercial, setCommercial] = useState(false)
   const [rush, setRush] = useState(false)
   const [brief, setBrief] = useState('')
+  const [sendState, setSendState] = useState<SendState>('idle')
 
   const type = COMMISSION_TYPES.find((ty) => ty.id === typeId) ?? COMMISSION_TYPES[0]
   const typeLabel = t.types[type.id]?.label ?? type.label
   const addonLabel = (id: string, fallback: string) => t.addons[id]?.label ?? fallback
+  const platformLabel =
+    SOCIAL_PLATFORMS.find((p) => p.id === socialPlatform)?.label ?? socialPlatform
   const base = currency === 'IDR' ? type.idr : type.usd
 
   const toggleAddon = (id: string) =>
@@ -60,6 +76,8 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
       m.greeting(ARTIST_NAME),
       '',
       `${m.name}: ${name || '-'}`,
+      `${m.email}: ${email || '-'}`,
+      `${m.social}: ${platformLabel} · ${socialUsername || '-'}`,
       `${m.currency}: ${currency}`,
       `${m.type}: ${typeLabel} - ${m.base} ${formatPrice(base, currency)}`,
       `${m.characters}: ${1 + extraChars}${extraChars ? m.extraChars(extraChars, EXTRA_CHARACTER_RATE * 100) : ''}`,
@@ -72,21 +90,40 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
       brief || '-',
     ]
     return lines.join('\n')
-  }, [name, currency, typeLabel, base, extraChars, selectedAddons, commercial, rush, estimate, brief, t])
+  }, [name, email, platformLabel, socialUsername, currency, typeLabel, base, extraChars, selectedAddons, commercial, rush, estimate, brief, t])
 
-  const ready = name.trim().length > 0 && brief.trim().length > 0
-  const [dmOpen, setDmOpen] = useState(false)
-  const [copied, setCopied] = useState<string | null>(null)
+  const emailValid = EMAIL_RE.test(email.trim())
+  const ready =
+    name.trim().length > 0 &&
+    emailValid &&
+    socialUsername.trim().length > 0 &&
+    brief.trim().length > 0
 
-  // no prefill API for IG/TikTok DMs - copy the brief, then open the DM/profile
-  const sendVia = async (platform: 'instagram' | 'tiktok') => {
+  // editing the order after a successful send re-arms the button
+  useEffect(() => {
+    if (sendState === 'sent') setSendState('idle')
+    // sendState is intentionally only read, not a trigger - orderMessage is the signal
+  }, [orderMessage])
+
+  const submit = async () => {
+    if (!ready || sendState === 'sending') return
+    setSendState('sending')
     try {
-      await navigator.clipboard.writeText(orderMessage)
-      setCopied(platform)
+      const res = await fetch('/api/send-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          social: { platform: socialPlatform, username: socialUsername },
+          message: orderMessage,
+          website: honeypot,
+        }),
+      })
+      setSendState(res.ok ? 'sent' : 'error')
     } catch {
-      // clipboard blocked - still open the target so they can type manually
+      setSendState('error')
     }
-    window.open(platform === 'instagram' ? INSTAGRAM_DM_URL : TIKTOK_PROFILE_URL, '_blank')
   }
 
   return (
@@ -125,6 +162,52 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
             />
           </div>
 
+          {/* contact: email + social */}
+          <div className="grid gap-8 sm:grid-cols-2">
+            <div>
+              <label htmlFor="of-email" className={labelCls}>
+                {t.form.email} <span className="text-ink/30">*</span>
+              </label>
+              <input
+                id="of-email"
+                type="email"
+                className="field"
+                placeholder={t.form.emailPh}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              {email.trim().length > 0 && !emailValid && (
+                <p className="mt-2 text-xs text-red-500/80">{t.form.emailInvalid}</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="of-social" className={labelCls}>
+                {t.form.social} <span className="text-ink/30">*</span>
+              </label>
+              <div className="flex gap-2">
+                <select
+                  aria-label={t.form.socialPlatform}
+                  className="field w-auto shrink-0 cursor-pointer"
+                  value={socialPlatform}
+                  onChange={(e) => setSocialPlatform(e.target.value as SocialPlatformId)}
+                >
+                  {SOCIAL_PLATFORMS.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  id="of-social"
+                  className="field min-w-0"
+                  placeholder={t.form.socialPh}
+                  value={socialUsername}
+                  onChange={(e) => setSocialUsername(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
           {/* brief */}
           <div>
             <label htmlFor="of-brief" className={labelCls}>
@@ -142,6 +225,18 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
               {t.form.briefHint}
             </p>
           </div>
+
+          {/* honeypot - hidden from humans, bots fill it and get silently dropped */}
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            className="pointer-events-none absolute -left-[9999px] h-px w-px opacity-0"
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+          />
         </div>
 
         {/* ─── estimate panel ─── */}
@@ -205,16 +300,33 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
 
               <button
                 type="button"
-                onClick={() => ready && setDmOpen(true)}
-                aria-disabled={!ready}
+                onClick={submit}
+                aria-disabled={!ready || sendState === 'sending'}
                 className={`btn-dark mt-3 w-full px-6 py-3.5 text-sm  uppercase ${
-                  ready ? '' : 'cursor-not-allowed opacity-35'
+                  ready && sendState !== 'sending' ? '' : 'cursor-not-allowed opacity-35'
                 }`}
               >
                 <PaperAirplaneIcon className="h-4 w-4" />
-                {t.form.send}
+                {sendState === 'sending' ? t.form.sending : t.form.send}
               </button>
-              {!ready && (
+
+              {sendState === 'sent' && (
+                <div className="flex items-start gap-2.5 rounded-xl border border-ink/10 bg-ink/[0.03] px-4 py-3">
+                  <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
+                  <div>
+                    <p className="text-xs font-semibold">{t.form.sentTitle}</p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-ink/55">
+                      {t.form.sentSub}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {sendState === 'error' && (
+                <p className="text-center text-xs text-red-500/80">
+                  {t.form.sendError}
+                </p>
+              )}
+              {!ready && sendState !== 'sent' && (
                 <p className="text-center text-xs text-ink/45">
                   {t.form.fillRequired}
                 </p>
@@ -223,71 +335,6 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
           </div>
         </aside>
       </div>
-
-      {/* ─── DM picker popup ─── */}
-      {dmOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/70 p-4"
-          onClick={() => {
-            setDmOpen(false)
-            setCopied(null)
-          }}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={t.form.chooseSend}
-            className="w-full max-w-sm rounded-2xl bg-white p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="font-poppins text-2xl font-extrabold tracking-tight uppercase">{t.form.dmTitle}</h3>
-                <p className="mt-1.5 text-xs leading-relaxed text-ink/55">
-                  {t.form.dmSub}
-                </p>
-              </div>
-              <button
-                type="button"
-                aria-label={t.form.close}
-                onClick={() => {
-                  setDmOpen(false)
-                  setCopied(null)
-                }}
-                className="cursor-pointer rounded-full p-1.5 text-ink/40 transition-colors hover:bg-ink/5 hover:text-ink"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="mt-5 flex flex-col gap-2.5">
-              {(
-                [
-                  { id: 'instagram', label: 'Instagram DM', href: INSTAGRAM_DM_URL },
-                  { id: 'tiktok', label: 'TikTok DM', href: TIKTOK_PROFILE_URL },
-                ] as const
-              ).map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => sendVia(p.id)}
-                  className="flex cursor-pointer items-center justify-between rounded-xl border border-ink/15 px-5 py-3.5 text-sm font-semibold transition-colors hover:border-ink hover:bg-ink hover:text-paper"
-                >
-                  <span>{p.label}</span>
-                  {copied === p.id ? (
-                    <span className="flex items-center gap-1.5 text-xs font-medium">
-                      <ClipboardDocumentCheckIcon className="h-4 w-4" />
-                      {t.form.copied}
-                    </span>
-                  ) : (
-                    <span className="text-xs font-medium text-ink/40">{t.form.copyOpen}</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
