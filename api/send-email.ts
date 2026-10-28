@@ -1,13 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import nodemailer from 'nodemailer'
+import { mailHtml } from './_template'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-const escapeHtml = (s: string) =>
-  s.replace(
-    /[&<>"']/g,
-    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
-  )
 
 const str = (v: unknown, max: number) =>
   typeof v === 'string' && v.trim().length > 0 && v.length <= max ? v.trim() : null
@@ -51,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       replyTo: cleanEmail,
       subject: `New contact message — ${cleanName}`,
       text,
-      html: `<div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.6;white-space:pre-wrap">${escapeHtml(text)}</div>`,
+      html: mailHtml(text),
     })
 
     return res.status(200).json({ ok: true })
