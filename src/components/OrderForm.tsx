@@ -15,6 +15,7 @@ import {
 } from '../data/commission'
 import { ARTIST_NAME } from '../config'
 import { useLang } from '../i18n'
+import { DICT } from '../data/i18n'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -58,8 +59,9 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
 
   const selectedAddons = ADDONS.filter((a) => addons.has(a.id))
 
+  // order emails are always English regardless of the UI language
   const orderMessage = useMemo(() => {
-    const m = t.form.msg
+    const m = DICT.en.form.msg
     const lines = [
       m.greeting(ARTIST_NAME),
       '',
@@ -67,9 +69,9 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
       `${m.email}: ${email || '-'}`,
       `${m.social}: ${social || '-'}`,
       `${m.currency}: ${currency}`,
-      `${m.type}: ${typeLabel} - ${m.base} ${formatPrice(base, currency)}`,
+      `${m.type}: ${type.label} - ${m.base} ${formatPrice(base, currency)}`,
       `${m.characters}: ${1 + extraChars}${extraChars ? m.extraChars(extraChars, EXTRA_CHARACTER_RATE * 100) : ''}`,
-      `${m.addons}: ${selectedAddons.length ? selectedAddons.map((a) => `${addonLabel(a.id, a.label)} (${formatRange(addonRange(a, currency), currency)})`).join(', ') : m.none}`,
+      `${m.addons}: ${selectedAddons.length ? selectedAddons.map((a) => `${a.label} (${formatRange(addonRange(a, currency), currency)})`).join(', ') : m.none}`,
       `${m.commercial}: ${commercial ? `${m.yes} (x${COMMERCIAL_MULTIPLIER})` : m.no}`,
       `${m.rush}: ${rush ? `${m.yes} (+${(RUSH_MULTIPLIER - 1) * 100}%)` : m.no}`,
       `${m.estimate}: ${formatRange(estimate, currency)} (${m.estimateNote})`,
@@ -78,7 +80,7 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
       brief || '-',
     ]
     return lines.join('\n')
-  }, [name, email, social, currency, typeLabel, base, extraChars, selectedAddons, commercial, rush, estimate, brief, t])
+  }, [name, email, social, currency, type, base, extraChars, selectedAddons, commercial, rush, estimate, brief])
 
   const emailValid = EMAIL_RE.test(email.trim())
   const ready =
