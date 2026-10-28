@@ -185,8 +185,8 @@ const EN = {
     emailPh: 'where can I reach you?',
     emailInvalid: 'enter a valid email address',
     social: 'Social media',
-    socialPlatform: 'Platform',
-    socialPh: 'username / handle',
+    socialPh: 'instagram @yourname',
+    socialHint: 'include the platform name and your username, e.g. instagram @name, discord name, wa 08xx…',
     msg: {
       greeting: (artist: string) => `Hi ${artist}! I'd like to order a commission.`,
       name: 'Name',
@@ -427,8 +427,8 @@ const ID: Dict = {
     emailPh: 'email yang bisa dihubungi?',
     emailInvalid: 'masukkan alamat email yang valid',
     social: 'Sosial media',
-    socialPlatform: 'Platform',
-    socialPh: 'username / handle',
+    socialPh: 'instagram @namamu',
+    socialHint: 'cantumkan nama platform dan username-mu, mis. instagram @nama, discord nama, wa 08xx…',
     msg: {
       greeting: (artist) => `Halo ${artist}! Saya mau pesan komisi.`,
       name: 'Nama',

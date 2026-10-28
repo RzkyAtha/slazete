@@ -2,7 +2,6 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import nodemailer from 'nodemailer'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const PLATFORMS = new Set(['instagram', 'x', 'tiktok', 'discord', 'whatsapp'])
 
 const escapeHtml = (s: string) =>
   s.replace(
@@ -25,18 +24,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true })
   }
 
-  const platform = social?.platform
   const cleanName = str(name, 120)
   const cleanEmail = str(email, 200)
-  const cleanUsername = str(social?.username, 120)
+  const cleanSocial = str(social, 160)
   const cleanMessage = str(message, 10_000)
 
   if (
     !cleanName ||
     !cleanEmail ||
     !EMAIL_RE.test(cleanEmail) ||
-    !PLATFORMS.has(platform) ||
-    !cleanUsername ||
+    !cleanSocial ||
     !cleanMessage
   ) {
     return res.status(400).json({ error: 'invalid' })

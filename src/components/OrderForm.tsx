@@ -18,15 +18,6 @@ import { useLang } from '../i18n'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-const SOCIAL_PLATFORMS = [
-  { id: 'instagram', label: 'Instagram' },
-  { id: 'x', label: 'X (Twitter)' },
-  { id: 'tiktok', label: 'TikTok' },
-  { id: 'discord', label: 'Discord' },
-  { id: 'whatsapp', label: 'WhatsApp' },
-] as const
-
-type SocialPlatformId = (typeof SOCIAL_PLATFORMS)[number]['id']
 type SendState = 'idle' | 'sending' | 'sent' | 'error'
 
 export default function OrderForm({ dark = false }: { dark?: boolean }) {
@@ -36,8 +27,7 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
   }`
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [socialPlatform, setSocialPlatform] = useState<SocialPlatformId>('instagram')
-  const [socialUsername, setSocialUsername] = useState('')
+  const [social, setSocial] = useState('')
   const [honeypot, setHoneypot] = useState('')
   const [currency, setCurrency] = useState<Currency>('IDR')
   const [typeId, setTypeId] = useState(COMMISSION_TYPES[0].id)
@@ -51,8 +41,6 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
   const type = COMMISSION_TYPES.find((ty) => ty.id === typeId) ?? COMMISSION_TYPES[0]
   const typeLabel = t.types[type.id]?.label ?? type.label
   const addonLabel = (id: string, fallback: string) => t.addons[id]?.label ?? fallback
-  const platformLabel =
-    SOCIAL_PLATFORMS.find((p) => p.id === socialPlatform)?.label ?? socialPlatform
   const base = currency === 'IDR' ? type.idr : type.usd
 
   const toggleAddon = (id: string) =>
@@ -77,7 +65,7 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
       '',
       `${m.name}: ${name || '-'}`,
       `${m.email}: ${email || '-'}`,
-      `${m.social}: ${platformLabel} · ${socialUsername || '-'}`,
+      `${m.social}: ${social || '-'}`,
       `${m.currency}: ${currency}`,
       `${m.type}: ${typeLabel} - ${m.base} ${formatPrice(base, currency)}`,
       `${m.characters}: ${1 + extraChars}${extraChars ? m.extraChars(extraChars, EXTRA_CHARACTER_RATE * 100) : ''}`,
@@ -90,13 +78,13 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
       brief || '-',
     ]
     return lines.join('\n')
-  }, [name, email, platformLabel, socialUsername, currency, typeLabel, base, extraChars, selectedAddons, commercial, rush, estimate, brief, t])
+  }, [name, email, social, currency, typeLabel, base, extraChars, selectedAddons, commercial, rush, estimate, brief, t])
 
   const emailValid = EMAIL_RE.test(email.trim())
   const ready =
     name.trim().length > 0 &&
     emailValid &&
-    socialUsername.trim().length > 0 &&
+    social.trim().length > 0 &&
     brief.trim().length > 0
 
   // editing the order after a successful send re-arms the button
@@ -115,7 +103,7 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
         body: JSON.stringify({
           name,
           email,
-          social: { platform: socialPlatform, username: socialUsername },
+          social,
           message: orderMessage,
           website: honeypot,
         }),
@@ -184,27 +172,14 @@ export default function OrderForm({ dark = false }: { dark?: boolean }) {
               <label htmlFor="of-social" className={labelCls}>
                 {t.form.social} <span className="text-ink/30">*</span>
               </label>
-              <div className="flex gap-2">
-                <select
-                  aria-label={t.form.socialPlatform}
-                  className="field w-auto shrink-0 cursor-pointer"
-                  value={socialPlatform}
-                  onChange={(e) => setSocialPlatform(e.target.value as SocialPlatformId)}
-                >
-                  {SOCIAL_PLATFORMS.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  id="of-social"
-                  className="field min-w-0"
-                  placeholder={t.form.socialPh}
-                  value={socialUsername}
-                  onChange={(e) => setSocialUsername(e.target.value)}
-                />
-              </div>
+              <input
+                id="of-social"
+                className="field"
+                placeholder={t.form.socialPh}
+                value={social}
+                onChange={(e) => setSocial(e.target.value)}
+              />
+              <p className="mt-2 text-xs text-ink/45">{t.form.socialHint}</p>
             </div>
           </div>
 
